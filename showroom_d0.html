@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Showroom</title>
+        <meta charset="utf-8" />
+        <script src="jquery-1.11.1.min.js"></script>
+        <script src="three.min.js"></script>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<!-- Bootstrap Start -->
+        <link rel="stylesheet" href="bootstrap.min.css">
+        <link rel="stylesheet" href="bootstrap-theme.min.css">
+        <script src="bootstrap.min.js"></script>
+<!-- Bootstrap End -->
+        <style>
+            body {
+                font-family: Monospace;
+                margin: 0px;
+                overflow: hidden;
+            }
+            div#showroomContainer {
+                background-color: #f0f0f0;
+            }
+        </style>
+        <script src="showroom.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <div id="showroomContainer" class="col-md-12">
+            </div>
+            Click me!
+            <script type="text/javascript">
+                var showroom = new Showroom($("#showroomContainer"));
+                document.addEventListener( 'mousedown', function(event){
+                    event.preventDefault();
+                    showroom.SetLightPos(event.clientX, event.clientY, 130);
+                    showroom.Render();
+                }, false );
+                showroom.AddSphere();
+                showroom.Render();
+            </script>
+        </div>
+    </body>
+</html>
