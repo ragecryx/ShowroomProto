@@ -3,8 +3,9 @@
     <head>
         <title>ShowroomProto</title>
         <meta charset="utf-8" />
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-        <script src="//ajax.googleapis.com/ajax/libs/threejs/r67/three.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/threejs/r67/three.min.js"></script>
+        <script type="text/javascript" src="orbitcontrols.js"></script>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
         <style>
@@ -30,7 +31,9 @@
                     showroom.SetLightPos(event.clientX, event.clientY, 130);
                     showroom.Render();
                 }, false );
-                showroom.AddSphere();
+                // //showroom.AddSphere();
+                showroom.AddCube();
+                showroom.AddWallSegment(0, 0, 200, 20);
                 showroom.Render();
             </script>
     </body>
