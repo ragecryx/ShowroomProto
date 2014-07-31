@@ -1,12 +1,12 @@
 
-function Showroom() {
+function Showroom(container) {
     this._width = 1024;
     this._height = 576;
     this._viewangle = 45;
     this._aspectratio = this._width / this._height;
     this._near = 0.1;
     this._far = 10000;
-    // TO BE REMOVED this._container = container;
+    this._container = container;
     this._renderer = new THREE.WebGLRenderer({antialias: true});
     this._camera = new THREE.PerspectiveCamera( this._viewangle, 
                                                 this._aspectratio, 
@@ -18,8 +18,7 @@ function Showroom() {
     this._camera.position.z = 300;
     this._renderer.setSize(this._width, this._height);
     this._renderer.setClearColor( 0xf0f0f0 );
-    // TO BE REMOVED this._container.html(this._renderer.domElement);
-    document.getElementById('ShowroomApp').appendChild(this._renderer.domElement);
+    this._container.html(this._renderer.domElement);
     this._pointLight = new THREE.PointLight(0xFFFFFF);
     this._pointLight.intensity = 1.1;
     this._pointLight.position.x = 10;
