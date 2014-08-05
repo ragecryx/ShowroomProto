@@ -44,24 +44,87 @@ function Showroom() {
     this._renderer.setClearColor( 0xf0f0f0 );
     this._container.html(this._renderer.domElement);
 
+    this._SetupLighting();
+    this._SetupControls();
+}
+
+
+Showroom.prototype._SetupLighting = function () {
     this._pointLight = new THREE.PointLight(0xFFFFFF);
     this._pointLight.intensity = 1.1;
     this._pointLight.position.x = 10;
     this._pointLight.position.y = 50;
     this._pointLight.position.z = 130;
     this._scene.add(this._pointLight);
+};
 
-    this._controls = new THREE.OrbitControls( this._currentCamera );
 
 
-    function renderAfterChangesCb(obj) {
+Showroom.prototype._SetupControls = function () {
+
+    // Setup Orbit camera controls
+    this._orbitControls = new THREE.OrbitControls( this._currentCamera );
+
+    function orbitControlCb(obj) {
         return function() {
             obj.Render();
-        }
+        };
     }
 
-    this._controls.addEventListener('change', renderAfterChangesCb(this));
-}
+    this._orbitControls.addEventListener('change', orbitControlCb(this));
+
+
+
+    // Tools controls
+    this._toolControls = new Showroom.WallToolControls(this._container[ 0 ]);
+
+    function toolTestCb(obj) {
+        return function() {
+            console.log("DING!! WALL UPDATED CALLBACK!!!");
+        };
+    }
+
+    this._toolControls.addEventListener('wallupdated', toolTestCb(this));
+
+
+
+    // Extra controls (Camera swap etc.)
+    function keyboardControlCb(obj) {
+       return function(e){
+            if(obj._toolControlsEnabled) {
+                // nothing
+            }
+
+            if(e.which == 67)
+                if(obj._currentCameraName === "preview") {
+                    obj._currentCamera = obj._floorPlanCamera;
+                    obj._currentCameraName = "floorplan";
+                } else {
+                    obj._currentCamera = obj._previewCamera;
+                    obj._currentCameraName = "preview";
+                }
+            // obj._orbitControls.object = obj._currentCamera;
+            
+            obj.Render();
+        
+        };
+    }
+    $(document).keydown(keyboardControlCb(this));
+    
+};
+
+
+
+Showroom.prototype.EnableToolControls = function () {
+    this._orbitControls.enabled = false;
+    this._toolControls.enabled = true;
+};
+
+
+Showroom.prototype.DisableToolControls = function () {
+    this._toolControls.enabled = false;
+    this._orbitControls.enabled = true;
+};
 
 
 
