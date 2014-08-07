@@ -39,8 +39,26 @@ var Showroom = (function () {
 
         
         // Default object(s) config/data
-        var defaultMaterial = new THREE.MeshLambertMaterial({color: 0xFFFFFF});
+        var defaultMaterial = new THREE.MeshLambertMaterial( {color: 0xFFFFFF} );
+        var debugMaterial = new THREE.MeshLambertMaterial( {color: 0xCC0000} );
+
+
+        // Floor/Grid
         var worldGrid = new THREE.GridHelper(20, 1);
+
+        var worldGridGeo = new THREE.Geometry();
+        worldGridGeo.vertices.push(
+                new THREE.Vector3(1000, 0, 1000),
+                new THREE.Vector3(-1000, 0, 1000),
+                new THREE.Vector3(-1000, 0, -1000),
+                new THREE.Vector3(1000, 0, -1000)
+            );
+        worldGridGeo.faces.push( new THREE.Face3(1,0,3) );
+        worldGridGeo.faces.push( new THREE.Face3(2,1,3) );
+        worldGridGeo.computeFaceNormals();
+        worldGridGeo.computeVertexNormals();
+
+        var worldGridMesh = new THREE.Mesh( worldGridGeo );
 
 
         // Wall objects config/data
@@ -79,10 +97,10 @@ var Showroom = (function () {
             controls.orbitControls.addEventListener( 'change', function (){ Showroom.Render(); } );
 
             // Tools controls
-            controls.toolControls = new WallToolControl( container[ 0 ] );
+            controls.toolControls = new Showroom.WallToolControl( container[ 0 ] );
 
             controls.toolControls.addEventListener('wallupdated', function() {
-                    console.log("DING!! WALL UPDATED CALLBACK!!!")
+                    // console.log("DING!! WALL UPDATED CALLBACK!!!")
                 }
             );
 
@@ -94,6 +112,71 @@ var Showroom = (function () {
                     
                     Showroom.Render();
             } );
+        }
+
+
+        function GenerateWallSegment(x1, z1, x2, z2, isDynamic) {
+            var dynamic = (isDynamic !== undefined) ? isDynamic : false;
+            var segment = {
+                startPos: new THREE.Vector3(x1, 0, z1),
+                endPos: new THREE.Vector3(x2, 0, z2)
+            };
+                
+
+            // generate mesh
+            var wallGeometry = new THREE.Geometry();
+            wallGeometry.dynamic = dynamic;
+
+            var direction = (new THREE.Vector3(x2-x1, 0, z2-z1)).normalize();
+            var crossDirection = new THREE.Vector3();
+            crossDirection.crossVectors(direction, new THREE.Vector3(0,1,0)).normalize().multiplyScalar(wallOptions.wallThickness);
+
+            wallGeometry.vertices.push( /* 0 */ segment.startPos,
+                                        /* 1 */ segment.endPos,
+                                        /* 2 */ new THREE.Vector3(segment.startPos.x, wallOptions.wallHeight, segment.startPos.z),
+                                        /* 3 */ new THREE.Vector3(segment.endPos.x, wallOptions.wallHeight, segment.endPos.z),
+                                        /* 4 */ (new THREE.Vector3(segment.startPos.x, 0, segment.startPos.z)).sub(crossDirection),
+                                        /* 5 */ (new THREE.Vector3(segment.endPos.x, 0, segment.endPos.z)).sub(crossDirection),
+                                        /* 6 */ (new THREE.Vector3(segment.startPos.x, wallOptions.wallHeight, segment.startPos.z)).sub(crossDirection),
+                                        /* 7 */ (new THREE.Vector3(segment.endPos.x, wallOptions.wallHeight, segment.endPos.z)).sub(crossDirection)
+                                      );
+                
+
+            wallGeometry.faces.push( new THREE.Face3(0,1,2) );
+            wallGeometry.faces.push( new THREE.Face3(2,1,3) );
+            wallGeometry.faces.push( new THREE.Face3(2,7,6) );
+            wallGeometry.faces.push( new THREE.Face3(2,3,7) );
+            wallGeometry.faces.push( new THREE.Face3(0,2,6) );
+            wallGeometry.faces.push( new THREE.Face3(0,6,4) );
+            wallGeometry.faces.push( new THREE.Face3(5,7,3) );
+            wallGeometry.faces.push( new THREE.Face3(5,3,1) );
+            wallGeometry.faces.push( new THREE.Face3(6,5,4) );
+            wallGeometry.faces.push( new THREE.Face3(6,7,5) );
+
+            wallGeometry.computeFaceNormals();
+            wallGeometry.computeVertexNormals();
+
+            wallGeometry.WallUpdateEnd = function (x, z) {
+                var direction = (new THREE.Vector3(x-this.vertices[0].x, 0, z-this.vertices[0].z)).normalize();
+                var crossDirection = new THREE.Vector3();
+                crossDirection.crossVectors(direction, new THREE.Vector3(0,1,0)).normalize().multiplyScalar(wallOptions.wallThickness);
+
+                this.vertices[1].x = x;
+                this.vertices[1].z = z;
+
+                this.vertices[3].x = x;
+                this.vertices[3].z = z;
+
+                this.vertices[4] = (new THREE.Vector3(this.vertices[0].x, 0, this.vertices[0].z)).sub(crossDirection);
+                this.vertices[5] = (new THREE.Vector3(x, 0, z)).sub(crossDirection);
+                this.vertices[6] = (new THREE.Vector3(this.vertices[0].x, wallOptions.wallHeight, this.vertices[0].z)).sub(crossDirection);
+                this.vertices[7] = (new THREE.Vector3(x, wallOptions.wallHeight, z)).sub(crossDirection);
+            
+                this.verticesNeedUpdate = true;
+                this.normalsNeedUpdate = true;
+            };
+
+            return wallGeometry;
         }
 
 
@@ -138,49 +221,25 @@ var Showroom = (function () {
             },
 
 
-            AddWallSegment: function(x1, z1, x2, z2) {
-                var segment = {
-                    startPos: new THREE.Vector3(x1, 0, z1),
-                    endPos: new THREE.Vector3(x2, 0, z2)
-                };
-                wallSegments.push( segment );
-                
-                // generate mesh
-                var wallGeometry = new THREE.Geometry();
-
-                var direction = (new THREE.Vector3(x2-x1, 0, z2-z1)).normalize();
-                var crossDirection = new THREE.Vector3();
-                crossDirection.crossVectors(direction, new THREE.Vector3(0,1,0)).normalize().multiplyScalar(wallOptions.wallThickness);
-
-                wallGeometry.vertices.push( segment.startPos,
-                                            segment.endPos,
-                                            new THREE.Vector3(segment.startPos.x, wallOptions.wallHeight, segment.startPos.z),
-                                            new THREE.Vector3(segment.endPos.x, wallOptions.wallHeight, segment.endPos.z),
-                                            (new THREE.Vector3(segment.startPos.x, 0, segment.startPos.z)).sub(crossDirection),
-                                            (new THREE.Vector3(segment.endPos.x, 0, segment.endPos.z)).sub(crossDirection),
-                                            (new THREE.Vector3(segment.startPos.x, wallOptions.wallHeight, segment.startPos.z)).sub(crossDirection),
-                                            (new THREE.Vector3(segment.endPos.x, wallOptions.wallHeight, segment.endPos.z)).sub(crossDirection)
-                                          );
-                
-
-                wallGeometry.faces.push( new THREE.Face3(0,1,2) );
-                wallGeometry.faces.push( new THREE.Face3(2,1,3) );
-                wallGeometry.faces.push( new THREE.Face3(2,7,6) );
-                wallGeometry.faces.push( new THREE.Face3(2,3,7) );
-                wallGeometry.faces.push( new THREE.Face3(0,2,6) );
-                wallGeometry.faces.push( new THREE.Face3(0,6,4) );
-                wallGeometry.faces.push( new THREE.Face3(5,7,3) );
-                wallGeometry.faces.push( new THREE.Face3(5,3,1) );
-                wallGeometry.faces.push( new THREE.Face3(6,5,4) );
-                wallGeometry.faces.push( new THREE.Face3(6,7,5) );
-
-                wallGeometry.computeFaceNormals();
-                wallGeometry.computeVertexNormals();
-
+            AddWallSegment: function (x1, z1, x2, z2) {
                 var wallMaterial =  new THREE.MeshLambertMaterial({color: 0xCC0000});
-                var wallMesh = new THREE.Mesh(wallGeometry, defaultMaterial);
+                var wallMesh = new THREE.Mesh(GenerateWallSegment(x1,z1,x2,z2), defaultMaterial);
                 scene.add(wallMesh);
             },
+
+
+            GenerateWallSegment: function (x1, z1, x2, z2) {
+                var wallMaterial =  new THREE.MeshLambertMaterial({color: 0xCC0000});
+                var wallMesh = new THREE.Mesh(GenerateWallSegment(x1,z1,x2,z2,true), defaultMaterial);
+                scene.add(wallMesh);
+                return wallMesh;
+            },
+
+
+            GetActiveCamera: function () {
+                return currentCamera;
+            },
+
 
             ToggleActiveCamera: function () {
                 if( currentCameraName === "preview" ) {
@@ -190,6 +249,33 @@ var Showroom = (function () {
                     currentCamera = cameras.previewCamera;
                     currentCameraName = "preview";
                 }
+            },
+
+
+            GetWidthAndHeight: function () {
+                return {w: width, h: height};
+            },
+
+
+            GetMouseWorldPosition: function (mouseX, mouseY) {
+                var projector = new THREE.Projector();
+                var x = 2 * (mouseX / width) - 1,
+                    y = 1 - 2 * (mouseY / height); // mouse x and y coords
+                var pickingRay = projector.pickingRay( new THREE.Vector3(x, y, 0), currentCamera );
+                var points = pickingRay.intersectObject(worldGridMesh, false);
+                return points[0].point; // .distance, .face, .object etc
+            },
+
+
+            AddToScene: function (item) {
+                scene.add(item);
+                Showroom.Render();
+            },
+
+
+            RemoveFromScene: function (item) {
+                scene.remove(item);
+                Showroom.Render();
             }
 
         }; // Return ends here

@@ -17,16 +17,18 @@
             div#showroomContainer {
                 background-color: #f0f0f0;
             }
+            .btn {
+                cursor: pointer;
+            }
         </style>
         <script src="showroom.js"></script>
         <script src="srToolWall.js"></script>
     </head>
     <body>
-            <button onclick="Showroom.DisableToolControls();">Camera Movement</button>
-            <button onclick="Showroom.EnableToolControls();">Wall Tool</button>
+            <img class="btn" src="ui/tool_menu_camera.png" onclick="Showroom.DisableToolControls();" />
+            <img class="btn" src="ui/tool_menu_wall.png" onclick="Showroom.EnableToolControls();" />
             <div id="ShowroomApp">
             </div>
-            Click me!
             <script type="text/javascript">
                 Showroom.Initialize();
                 Showroom.AddWallSegment(0, 0, 8.2, 0);
