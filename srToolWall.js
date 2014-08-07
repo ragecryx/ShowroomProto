@@ -1,67 +1,69 @@
 
-Showroom.WallToolControl = function(domElement) {
-	this._domElement = (domElement !== undefined) ? domElement : document;
+// Controls
 
-	this.enabled = false;
+var WallToolControl = function(domElement) {
+    this._domElement = (domElement !== undefined) ? domElement : document;
 
-	// private stuff
-	var scope = this;
+    this.enabled = false;
 
-	// ephemeral data
-	this.__startPos = null;
-	this.__endPos = null;
-	this.__temp3dObject = null;
+    // private stuff
+    var scope = this;
 
-	// events
-	var wallBeginEvent = {type: 'wallbegin'};
-	var wallUpdatedEvent = {type: 'wallupdated'};
-	var wallEndEvent = {type: 'wallend'};
+    // ephemeral data
+    this.__startPos = null;
+    this.__endPos = null;
+    this.__temp3dObject = null;
 
-	this.update = function () {
+    // events
+    var wallBeginEvent = {type: 'wallbegin'};
+    var wallUpdatedEvent = {type: 'wallupdated'};
+    var wallEndEvent = {type: 'wallend'};
 
-		this.dispatchEvent(wallUpdatedEvent);
-	}
+    this.update = function () {
 
-	function onMouseDown(e) {
+        this.dispatchEvent(wallUpdatedEvent);
+    }
 
-		if ( scope.enabled === false ) return;
-		e.preventDefault();
+    function onMouseDown(e) {
 
-		console.log("Wall Tool MOUSE DOWN");
+        if ( scope.enabled === false ) return;
+        e.preventDefault();
 
-		document.addEventListener( 'mousemove', onMouseMove, false );
-		document.addEventListener( 'mouseup', onMouseUp, false );
-		scope.dispatchEvent( wallBeginEvent );
-	}
+        console.log("Wall Tool MOUSE DOWN");
 
-	function onMouseMove(e) {
+        document.addEventListener( 'mousemove', onMouseMove, false );
+        document.addEventListener( 'mouseup', onMouseUp, false );
+        scope.dispatchEvent( wallBeginEvent );
+    }
 
-		if ( scope.enabled === false ) return;
-		e.preventDefault();
+    function onMouseMove(e) {
 
-		console.log("Wall Tool MOUSE MOVE");
+        if ( scope.enabled === false ) return;
+        e.preventDefault();
 
-		scope.update();
-	}
+        console.log("Wall Tool MOUSE MOVE");
 
-	function onMouseUp(e) {
+        scope.update();
+    }
 
-		if ( scope.enabled === false ) return;
+    function onMouseUp(e) {
 
-		console.log("Wall Tool MOUSE UP");
+        if ( scope.enabled === false ) return;
 
-		document.removeEventListener( 'mousemove', onMouseMove, false );
-		document.removeEventListener( 'mouseup', onMouseUp, false );
-		scope.dispatchEvent( wallEndEvent );
-	}
+        console.log("Wall Tool MOUSE UP");
+
+        document.removeEventListener( 'mousemove', onMouseMove, false );
+        document.removeEventListener( 'mouseup', onMouseUp, false );
+        scope.dispatchEvent( wallEndEvent );
+    }
 
 
-	this._domElement.addEventListener( 'mousedown', onMouseDown, false );
-	// touch?
-	// this._domElement.addEventListener( 'touchstart', touchstart, false );
-	// this._domElement.addEventListener( 'touchend', touchend, false );
-	// this._domElement.addEventListener( 'touchmove', touchmove, false );
+    this._domElement.addEventListener( 'mousedown', onMouseDown, false );
+    // touch?
+    // this._domElement.addEventListener( 'touchstart', touchstart, false );
+    // this._domElement.addEventListener( 'touchend', touchend, false );
+    // this._domElement.addEventListener( 'touchmove', touchmove, false );
 
 };
 
-Showroom.WallToolControl.prototype = Object.create( THREE.EventDispatcher.prototype );
+WallToolControl.prototype = Object.create( THREE.EventDispatcher.prototype );

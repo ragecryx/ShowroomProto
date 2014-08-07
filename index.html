@@ -22,23 +22,17 @@
         <script src="srToolWall.js"></script>
     </head>
     <body>
-            <button onclick="showroom.DisableToolControls();">Camera Movement</button>
-            <button onclick="showroom.EnableToolControls();">Wall Tool</button>
+            <button onclick="Showroom.DisableToolControls();">Camera Movement</button>
+            <button onclick="Showroom.EnableToolControls();">Wall Tool</button>
             <div id="ShowroomApp">
             </div>
             Click me!
             <script type="text/javascript">
-                var showroom = new Showroom();
-                // document.addEventListener( 'mousedown', function(event){
-                //     event.preventDefault();
-                //     showroom.SetLightPos(event.clientX, event.clientY, 130);
-                //     showroom.Render();
-                // }, false );
-                // //showroom.AddSphere();
-                showroom.AddWallSegment(0, 0, 8.2, 0);
-                showroom.AddWallSegment(0, 5, 0, 2);
-                showroom.AddWallSegment(0, 0, 2, 2);
-                showroom.Render();
+                Showroom.Initialize();
+                Showroom.AddWallSegment(0, 0, 8.2, 0);
+                Showroom.AddWallSegment(0, 5, 0, 2);
+                Showroom.AddWallSegment(0, 0, 2, 2);
+                Showroom.Render();
             </script>
     </body>
 </html>
