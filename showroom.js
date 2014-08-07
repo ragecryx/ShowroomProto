@@ -76,7 +76,7 @@ Showroom.prototype._SetupControls = function () {
 
 
     // Tools controls
-    this._toolControls = new Showroom.WallToolControls(this._container[ 0 ]);
+    this._toolControls = new Showroom.WallToolControl(this._container[ 0 ]);
 
     function toolTestCb(obj) {
         return function() {

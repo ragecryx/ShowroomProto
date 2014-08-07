@@ -1,5 +1,5 @@
 
-Showroom.WallToolControls = function(domElement) {
+Showroom.WallToolControl = function(domElement) {
 	this._domElement = (domElement !== undefined) ? domElement : document;
 
 	this.enabled = false;
@@ -64,4 +64,4 @@ Showroom.WallToolControls = function(domElement) {
 
 };
 
-Showroom.WallToolControls.prototype = Object.create( THREE.EventDispatcher.prototype );
+Showroom.WallToolControl.prototype = Object.create( THREE.EventDispatcher.prototype );
