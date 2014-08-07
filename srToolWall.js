@@ -10,7 +10,12 @@ Showroom.WallToolControl = function ( domElement ) {
 
     // Tool in-world icon
     var wallIconImg = THREE.ImageUtils.loadTexture("ui/tool_inworld_wall.png");
-    var wallIconMat = new THREE.SpriteMaterial( {map: wallIconImg} );
+    var wallIconMat = new THREE.SpriteMaterial( {
+        map: wallIconImg,
+        scaleByViewport: true,
+        useScreenCoordinates: true,
+        sizeAttenuation: true
+    } );
     var wallIconSprite = new THREE.Sprite(wallIconMat);
 
     // Per-wall-segment-created data
@@ -27,7 +32,7 @@ Showroom.WallToolControl = function ( domElement ) {
 
         // Update position of tool icon
         wallIconSprite.position.x = wallLast.x;
-        wallIconSprite.position.y = wallLast.y+0.4;
+        wallIconSprite.position.y = wallLast.y+3.5;
         wallIconSprite.position.z = wallLast.z;
 
         this.dispatchEvent(wallUpdatedEvent);

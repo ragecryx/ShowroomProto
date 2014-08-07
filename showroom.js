@@ -67,6 +67,7 @@ var Showroom = (function () {
             wallThickness: 0.3
         };
         var wallSegments = [];
+        var wallSegmentsMeshes = [];
 
 
         // Controls config/data
@@ -91,6 +92,7 @@ var Showroom = (function () {
             scene.add( pointLight );
         }
 
+
         function SetupControls() {
             // Setup Orbit camera controls
             controls.orbitControls = new THREE.OrbitControls( currentCamera );
@@ -108,6 +110,8 @@ var Showroom = (function () {
             $(document).keydown( function (e) {
                     if(e.which == 67)
                         Showroom.ToggleActiveCamera();
+                    if(e.which == 90 && e.ctrlKey)
+                        Showroom.Undo();
                     // obj._orbitControls.object = obj._currentCamera;
                     
                     Showroom.Render();
@@ -221,10 +225,16 @@ var Showroom = (function () {
             },
 
 
+            Undo: function() {
+                scene.remove(wallSegmentsMeshes.pop());
+            },
+
+
             AddWallSegment: function (x1, z1, x2, z2) {
                 var wallMaterial =  new THREE.MeshLambertMaterial({color: 0xCC0000});
                 var wallMesh = new THREE.Mesh(GenerateWallSegment(x1,z1,x2,z2), defaultMaterial);
                 scene.add(wallMesh);
+                wallSegmentsMeshes.push(wallMesh);
             },
 
 
@@ -275,6 +285,16 @@ var Showroom = (function () {
 
             RemoveFromScene: function (item) {
                 scene.remove(item);
+                Showroom.Render();
+            },
+
+            ClearScene: function () {
+                var i;
+                while( (i = wallSegmentsMeshes.pop()) !== undefined ) {
+                    scene.remove(i);
+                }
+                wallSegments = [];
+                wallSegmentsMeshes = [];
                 Showroom.Render();
             }
 
