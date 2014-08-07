@@ -108,14 +108,20 @@ var Showroom = (function () {
 
             // Extra controls (Camera swap etc.)
             $(document).keydown( function (e) {
-                    if(e.which == 67)
-                        Showroom.ToggleActiveCamera();
-                    if(e.which == 90 && e.ctrlKey)
-                        Showroom.Undo();
-                    // obj._orbitControls.object = obj._currentCamera;
+                if(e.ctrlKey === true)
+                    ctrlIsDown = true;
+                if(e.which == 67)
+                    Showroom.ToggleActiveCamera();
+                if(e.which == 90 && e.ctrlKey === true)
+                    Showroom.Undo();
+                // obj._orbitControls.object = obj._currentCamera;
                     
-                    Showroom.Render();
+                Showroom.Render();
             } );
+
+            $(document).keyup( function (e) {
+                // nothing
+            });
         }
 
 
@@ -267,12 +273,17 @@ var Showroom = (function () {
             },
 
 
-            GetMouseWorldPosition: function (mouseX, mouseY) {
+            GetMouseWorldPosition: function (mouseX, mouseY, snap) {
+                var snapToGrid = (snap !== undefined) ? snap : false;
                 var projector = new THREE.Projector();
                 var x = 2 * (mouseX / width) - 1,
                     y = 1 - 2 * (mouseY / height); // mouse x and y coords
                 var pickingRay = projector.pickingRay( new THREE.Vector3(x, y, 0), currentCamera );
                 var points = pickingRay.intersectObject(worldGridMesh, false);
+                if (snapToGrid) {
+                    points[0].point.x = Math.round(points[0].point.x);
+                    points[0].point.z = Math.round(points[0].point.z);
+                }
                 return points[0].point; // .distance, .face, .object etc
             },
 

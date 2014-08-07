@@ -48,8 +48,14 @@ Showroom.WallToolControl = function ( domElement ) {
         Showroom.AddToScene(wallIconSprite);
 
         // 1 cast ray to find where you clicked in 3d space
-        var point = Showroom.GetMouseWorldPosition( (e.clientX - $("canvas").offset().left),
-                                           (e.clientY - $("canvas").offset().top) );
+        var point 
+        if (e.ctrlKey === true)
+            point = Showroom.GetMouseWorldPosition( (e.clientX - $("canvas").offset().left),
+                                                    (e.clientY - $("canvas").offset().top),
+                                                    true );
+        else
+            point = Showroom.GetMouseWorldPosition( (e.clientX - $("canvas").offset().left),
+                                                    (e.clientY - $("canvas").offset().top) );
         if(point !== undefined)
             wallStart = point;
 
@@ -70,8 +76,15 @@ Showroom.WallToolControl = function ( domElement ) {
         e.preventDefault();
 
         // 1 cast ray to find current world position
-        var point = Showroom.GetMouseWorldPosition( (e.clientX - $("canvas").offset().left),
-                                                   (e.clientY - $("canvas").offset().top) );
+        var point;
+        if(e.ctrlKey === true)
+            point = Showroom.GetMouseWorldPosition( (e.clientX - $("canvas").offset().left),
+                                                    (e.clientY - $("canvas").offset().top),
+                                                    true );
+        else
+            point = Showroom.GetMouseWorldPosition( (e.clientX - $("canvas").offset().left),
+                                                    (e.clientY - $("canvas").offset().top) );
+        
         if(point !== undefined) {
             wallLast = point;
         // 2 update wallPreview 3d model (already in scene)
@@ -89,7 +102,7 @@ Showroom.WallToolControl = function ( domElement ) {
         // 1 use Showroom.AddWallSegment(...) with wallStart and
         //    wallLast as parameters.
         Showroom.AddWallSegment( wallStart.x, wallStart.z,
-                                wallLast.x, wallLast.z );
+                                 wallLast.x, wallLast.z );
 
         // 2 clear wallStart, wallLast, wallPreview
         Showroom.RemoveFromScene(wallPreview);
