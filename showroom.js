@@ -57,7 +57,7 @@ var Showroom = (function () {
         worldGridGeo.faces.push( new THREE.Face3(2,1,3) );
         worldGridGeo.computeFaceNormals();
         worldGridGeo.computeVertexNormals();
-
+        // Used for checking intersections with the floor (eg. clicking on the floor)
         var worldGridMesh = new THREE.Mesh( worldGridGeo );
 
 
@@ -83,6 +83,7 @@ var Showroom = (function () {
         
         // Private method definitions
 
+        // Scene lights initialization function
         function SetupLighting() {
             pointLight = new THREE.PointLight(0xFFFFFF);
             pointLight.intensity = 1.1;
@@ -92,39 +93,45 @@ var Showroom = (function () {
             scene.add( pointLight );
         }
 
-
+        // App controls (keyboard and mouse) initialization function
         function SetupControls() {
+
             // Setup Orbit camera controls
             controls.orbitControls = new THREE.OrbitControls( currentCamera );
-            controls.orbitControls.addEventListener( 'change', function (){ Showroom.Render(); } );
+            controls.orbitControls.addEventListener( 'change', function (){
+                Showroom.Render();
+            } );
 
             // Tools controls
             controls.toolControls = new Showroom.WallToolControl( container[ 0 ] );
 
             controls.toolControls.addEventListener('wallupdated', function() {
-                    // console.log("DING!! WALL UPDATED CALLBACK!!!")
-                }
-            );
+                    // console.log("WallToolControl Update.")
+                    Showroom.Render();
+            } );
 
-            // Extra controls (Camera swap etc.)
+            // Keybpard controls (Camera swap etc.)
             $(document).keydown( function (e) {
-                if(e.ctrlKey === true)
-                    ctrlIsDown = true;
                 if(e.which == 67)
                     Showroom.ToggleActiveCamera();
                 if(e.which == 90 && e.ctrlKey === true)
                     Showroom.Undo();
-                // obj._orbitControls.object = obj._currentCamera;
+                // Switch camera controls or fix them
+                // eg. obj._orbitControls.object = obj._currentCamera;
                     
                 Showroom.Render();
             } );
 
             $(document).keyup( function (e) {
-                // nothing
-            });
+                // nothing yet
+            } );
         }
 
 
+        // Generates a wall segment to be updated regularly (used for previews etc)
+        // Returned wall segment geometry object contains an extra method
+        //  called WallUpdateEnd(x,z) that recalculates the end vertices of the
+        //  geometry.
         function GenerateWallSegment(x1, z1, x2, z2, isDynamic) {
             var dynamic = (isDynamic !== undefined) ? isDynamic : false;
             var segment = {
@@ -202,6 +209,7 @@ var Showroom = (function () {
                 SetupControls();
                 SetupLighting();
 
+                // initial camera position/rotation
                 cameras.previewCamera.position.y = 1.8;
                 cameras.previewCamera.position.x = 2;
                 cameras.previewCamera.position.z = 20;
@@ -219,23 +227,30 @@ var Showroom = (function () {
             },
 
 
+            // Disables camera control and hands it over to the tool
+            // *FIXME* Needs to be more generic and support more tools
             EnableToolControls: function () {
                 controls.orbitControls.enabled = false;
                 controls.toolControls.enabled = true;
             },
 
 
+            // Disables tools control and hands it over to the camera
+            // *FIXME* Needs to be more generic and support more tools
             DisableToolControls: function () {
                 controls.toolControls.enabled = false;
                 controls.orbitControls.enabled = true;
             },
 
 
+            // Removes last wall added
+            // *FIXME* If the app needs a real undo/redo system this needs remake
             Undo: function() {
                 scene.remove(wallSegmentsMeshes.pop());
             },
 
 
+            // Adds a fixed wall segment (its geometry is not meant to change)
             AddWallSegment: function (x1, z1, x2, z2) {
                 var wallMaterial =  new THREE.MeshLambertMaterial({color: 0xCC0000});
                 var wallMesh = new THREE.Mesh(GenerateWallSegment(x1,z1,x2,z2), defaultMaterial);
@@ -244,6 +259,8 @@ var Showroom = (function () {
             },
 
 
+            // The public method that generates a preview wall segment (dynamic geometry)
+            // Uses GenerateWallSegment to create the geometry
             GenerateWallSegment: function (x1, z1, x2, z2) {
                 var wallMaterial =  new THREE.MeshLambertMaterial({color: 0xCC0000});
                 var wallMesh = new THREE.Mesh(GenerateWallSegment(x1,z1,x2,z2,true), defaultMaterial);
@@ -257,6 +274,8 @@ var Showroom = (function () {
             },
 
 
+            // Toggles between preview (perspective) camera and
+            // floorplan (top, orthographic) camera
             ToggleActiveCamera: function () {
                 if( currentCameraName === "preview" ) {
                     currentCamera = cameras.planCamera;
@@ -273,6 +292,9 @@ var Showroom = (function () {
             },
 
 
+            // Throws a ray from the point clicked and
+            // returns the world position of the intersection
+            // point with the floor.
             GetMouseWorldPosition: function (mouseX, mouseY, snap) {
                 var snapToGrid = (snap !== undefined) ? snap : false;
                 var projector = new THREE.Projector();
@@ -288,17 +310,21 @@ var Showroom = (function () {
             },
 
 
+            // Adds an object to the scene and triggers a render
             AddToScene: function (item) {
                 scene.add(item);
                 Showroom.Render();
             },
 
 
+            // Removes an object from the scene and triggers a render
             RemoveFromScene: function (item) {
                 scene.remove(item);
                 Showroom.Render();
             },
 
+
+            // Removes all objects from the scene and triggers a render
             ClearScene: function () {
                 var i;
                 while( (i = wallSegmentsMeshes.pop()) !== undefined ) {

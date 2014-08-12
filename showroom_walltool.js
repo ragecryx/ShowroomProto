@@ -5,8 +5,10 @@ Showroom.WallToolControl = function ( domElement ) {
 
     this.enabled = false;
 
+
     // private stuff
     var scope = this;
+
 
     // Tool in-world icon
     var wallIconImg = THREE.ImageUtils.loadTexture("ui/tool_inworld_wall.png");
@@ -18,16 +20,20 @@ Showroom.WallToolControl = function ( domElement ) {
     } );
     var wallIconSprite = new THREE.Sprite(wallIconMat);
 
+
     // Per-wall-segment-created data
     var wallStart = null;
     var wallLast = null;
     var wallPreview = null; // Object3d
+
 
     // events
     var wallBeginEvent = {type: 'wallbegin'};
     var wallUpdatedEvent = {type: 'wallupdated'};
     var wallEndEvent = {type: 'wallend'};
 
+
+    
     this.update = function () {
 
         // Update position of tool icon
@@ -36,8 +42,9 @@ Showroom.WallToolControl = function ( domElement ) {
         wallIconSprite.position.z = wallLast.z;
 
         this.dispatchEvent(wallUpdatedEvent);
-        Showroom.Render();
     }
+
+
 
     function onMouseDown(e) {
 
@@ -70,6 +77,8 @@ Showroom.WallToolControl = function ( domElement ) {
         scope.dispatchEvent( wallBeginEvent );
     }
 
+
+
     function onMouseMove(e) {
 
         if ( scope.enabled === false || e.which != 1) return;
@@ -94,6 +103,8 @@ Showroom.WallToolControl = function ( domElement ) {
         scope.update();
     }
 
+
+
     function onMouseUp(e) {
 
         if ( scope.enabled === false || e.which != 1) return;
@@ -116,8 +127,10 @@ Showroom.WallToolControl = function ( domElement ) {
     }
 
 
+    // Default event listeners
     this._domElement.addEventListener( 'mousedown', onMouseDown, false );
-    // touch?
+
+    // *FIXME* How about touch events?
     // this._domElement.addEventListener( 'touchstart', touchstart, false );
     // this._domElement.addEventListener( 'touchend', touchend, false );
     // this._domElement.addEventListener( 'touchmove', touchmove, false );
