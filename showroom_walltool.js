@@ -69,17 +69,12 @@ Showroom.WallToolControl = function ( domElement ) {
         wallPreview = Showroom.GenerateWallSegment(wallStart.x, wallStart.z, wallLast.x+1, wallLast.z+1);
 
         // 4 Setup length indicator
-        var middleVec = new THREE.Vector3();
-        middleVec.copy(wallLast);
-        middleVec.sub(wallStart);
-        middleVec.divideScalar(2);
-        var screenPoint = Showroom.Get3DPointScreenPosition(middleVec);
         var wallLength = wallStart.distanceTo( wallLast );
-        var htmlString = "<div id='wallLenDiv' style='background-color: black; color:white; padding: 3px; position:fixed;'></div>";
+        var htmlString = "<div id='wallLengthIndicator' style='background-color: black; color:white; padding: 3px; position:fixed;'></div>";
         $("body").append(htmlString);
-        $("#wallLenDiv").html(wallLength);
-        $("#wallLenDiv").css("top", Math.floor(screenPoint.y));
-        $("#wallLenDiv").css("left", Math.floor(screenPoint.x));
+        $("#wallLengthIndicator").html(wallLength.toFixed(2) + " m");
+        $("#wallLengthIndicator").css("top", $("canvas").offset().top);
+        $("#wallLengthIndicator").css("left", Math.floor( $("canvas").width()/2 - $("#wallLengthIndicator").width()/2 ));
 
         document.addEventListener( 'mousemove', onMouseMove, false );
         document.addEventListener( 'mouseup', onMouseUp, false );
@@ -105,15 +100,8 @@ Showroom.WallToolControl = function ( domElement ) {
         }
 
         // 3 Show wall length indicator
-        var middleVec = new THREE.Vector3();
-        middleVec.copy(wallLast);
-        middleVec.sub(wallStart);
-        middleVec.divideScalar(2);
-        var screenPoint = Showroom.Get3DPointScreenPosition(middleVec);
         var wallLength = wallStart.distanceTo( wallLast );
-        $("#wallLenDiv").html(wallLength.toFixed(2) + " m");
-        $("#wallLenDiv").css("top", Math.floor(screenPoint.y));
-        $("#wallLenDiv").css("left", Math.floor(screenPoint.x));
+        $("#wallLengthIndicator").html(wallLength.toFixed(2) + " m");
 
         scope.update();
     }
@@ -137,7 +125,7 @@ Showroom.WallToolControl = function ( domElement ) {
         wallPreview = null;
 
         // 3 clean-up length indicator
-        $("#wallLenDiv").remove();
+        $("#wallLengthIndicator").remove();
 
         document.removeEventListener( 'mousemove', onMouseMove, false );
         document.removeEventListener( 'mouseup', onMouseUp, false );

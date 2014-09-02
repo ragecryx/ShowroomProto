@@ -310,19 +310,6 @@ var Showroom = (function () {
             },
 
 
-            // Finds the screen coordinates of a 3d object
-            Get3DPointScreenPosition: function (point) {
-
-                var projector = new THREE.Projector();
-                var vector = new THREE.Vector3(point);
-                vector.copy(point);
-                projector.projectVector( vector, currentCamera );
-
-                return new THREE.Vector2( vector.x * width/2 + width/2,
-                                          -vector.y * height/2 + height/2 );
-            },
-
-
             // Adds an object to the scene and triggers a render
             AddToScene: function (item) {
                 scene.add(item);
