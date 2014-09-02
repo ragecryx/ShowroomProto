@@ -55,14 +55,10 @@ Showroom.WallToolControl = function ( domElement ) {
         Showroom.AddToScene(wallIconSprite);
 
         // 1 cast ray to find where you clicked in 3d space
-        var point 
-        if (e.ctrlKey === true)
-            point = Showroom.GetMouseWorldPosition( (e.clientX - $("canvas").offset().left),
+        var point = Showroom.GetMouseWorldPosition( (e.clientX - $("canvas").offset().left),
                                                     (e.clientY - $("canvas").offset().top),
-                                                    true );
-        else
-            point = Showroom.GetMouseWorldPosition( (e.clientX - $("canvas").offset().left),
-                                                    (e.clientY - $("canvas").offset().top) );
+                                                     e.ctrlKey );
+
         if(point !== undefined)
             wallStart = point;
 
@@ -71,6 +67,19 @@ Showroom.WallToolControl = function ( domElement ) {
         
         // 3 setup wallPreview 3d object and add to scene
         wallPreview = Showroom.GenerateWallSegment(wallStart.x, wallStart.z, wallLast.x+1, wallLast.z+1);
+
+        // 4 Setup length indicator
+        var middleVec = new THREE.Vector3();
+        middleVec.copy(wallLast);
+        middleVec.sub(wallStart);
+        middleVec.divideScalar(2);
+        var screenPoint = Showroom.Get3DPointScreenPosition(middleVec);
+        var wallLength = wallStart.distanceTo( wallLast );
+        var htmlString = "<div id='wallLenDiv' style='background-color: black; color:white; padding: 3px; position:fixed;'></div>";
+        $("body").append(htmlString);
+        $("#wallLenDiv").html(wallLength);
+        $("#wallLenDiv").css("top", Math.floor(screenPoint.y));
+        $("#wallLenDiv").css("left", Math.floor(screenPoint.x));
 
         document.addEventListener( 'mousemove', onMouseMove, false );
         document.addEventListener( 'mouseup', onMouseUp, false );
@@ -85,20 +94,26 @@ Showroom.WallToolControl = function ( domElement ) {
         e.preventDefault();
 
         // 1 cast ray to find current world position
-        var point;
-        if(e.ctrlKey === true)
-            point = Showroom.GetMouseWorldPosition( (e.clientX - $("canvas").offset().left),
+        var point = Showroom.GetMouseWorldPosition( (e.clientX - $("canvas").offset().left),
                                                     (e.clientY - $("canvas").offset().top),
-                                                    true );
-        else
-            point = Showroom.GetMouseWorldPosition( (e.clientX - $("canvas").offset().left),
-                                                    (e.clientY - $("canvas").offset().top) );
+                                                     e.ctrlKey );
         
         if(point !== undefined) {
             wallLast = point;
-        // 2 update wallPreview 3d model (already in scene)
+            // 2 update wallPreview 3d model (already in scene)
             wallPreview.geometry.WallUpdateEnd(wallLast.x, wallLast.z);
         }
+
+        // 3 Show wall length indicator
+        var middleVec = new THREE.Vector3();
+        middleVec.copy(wallLast);
+        middleVec.sub(wallStart);
+        middleVec.divideScalar(2);
+        var screenPoint = Showroom.Get3DPointScreenPosition(middleVec);
+        var wallLength = wallStart.distanceTo( wallLast );
+        $("#wallLenDiv").html(wallLength.toFixed(2) + " m");
+        $("#wallLenDiv").css("top", Math.floor(screenPoint.y));
+        $("#wallLenDiv").css("left", Math.floor(screenPoint.x));
 
         scope.update();
     }
@@ -111,7 +126,7 @@ Showroom.WallToolControl = function ( domElement ) {
 
         Showroom.RemoveFromScene(wallIconSprite);
         // 1 use Showroom.AddWallSegment(...) with wallStart and
-        //    wallLast as parameters.
+        //   wallLast as parameters.
         Showroom.AddWallSegment( wallStart.x, wallStart.z,
                                  wallLast.x, wallLast.z );
 
@@ -120,6 +135,9 @@ Showroom.WallToolControl = function ( domElement ) {
         wallStart = null;
         wallLast = null;
         wallPreview = null;
+
+        // 3 clean-up length indicator
+        $("#wallLenDiv").remove();
 
         document.removeEventListener( 'mousemove', onMouseMove, false );
         document.removeEventListener( 'mouseup', onMouseUp, false );
