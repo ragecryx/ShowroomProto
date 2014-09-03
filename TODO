@@ -1,7 +1,9 @@
 
 ## TODO ##
 
-- [ ] Fix room corners.
+- [x] Load a test object.
+- [ ] Fix room corners & wall thickness displacement.
 - [ ] Snap wall segments.
-- [ ] Load a test object.
+- [ ] Refactor tool support.
+- [ ] Prevent item intersection.
 - [ ] Windows and Doors (Objects changing wall segments).
