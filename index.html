@@ -23,11 +23,14 @@
         </style>
         <script src="showroom.js"></script>
         <script src="showroom_walltool.js"></script>
+        <script src="showroom_movetool.js"></script>
     </head>
     <body>
             <img class="btn" src="ui/tool_menu_camera.png" onclick="Showroom.DisableToolControls();" />
+            <img class="btn" src="ui/tool_menu_empty.png" onclick="Showroom.EnableMoveTool();" />
             <img class="btn" src="ui/tool_menu_wall.png" onclick="Showroom.EnableToolControls();" />
             <img class="btn" src="ui/tool_menu_clear.png" onclick="Showroom.ClearScene();" />
+            <img class="btn" src="ui/tool_menu_empty.png" onclick="Showroom.AddItem('data/demo_table.js')" />
             <div id="ShowroomApp">
             </div>
             <script type="text/javascript">

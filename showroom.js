@@ -70,10 +70,15 @@ var Showroom = (function () {
         var wallSegmentsMeshes = [];
 
 
+        // Room items *TOBEMOVED*
+        var roomItems = [];
+
+
         // Controls config/data
         var controls = {
             orbitControls: null,
-            toolControls: null
+            toolControls: null,
+            moveToolControl: null
         };
         
 
@@ -102,6 +107,7 @@ var Showroom = (function () {
                 Showroom.Render();
             } );
 
+
             // Tools controls
             controls.toolControls = new Showroom.WallToolControl( container[ 0 ] );
 
@@ -109,6 +115,18 @@ var Showroom = (function () {
                     // console.log("WallToolControl Update.")
                     Showroom.Render();
             } );
+
+
+            controls.moveToolControl = new Showroom.MoveToolControl( container[ 0 ] );
+
+            controls.moveToolControl.addEventListener('itemMove', function() {
+                Showroom.Render();
+            });
+
+            controls.moveToolControl.addEventListener('itemPlace', function() {
+                Showroom.Render();
+            });
+
 
             // Keybpard controls (Camera swap etc.)
             $(document).keydown( function (e) {
@@ -227,10 +245,20 @@ var Showroom = (function () {
             },
 
 
+            // Enables the move object tool
+            // *FIXME* Needs to be more generic and support more tools
+            EnableMoveTool: function () {
+                controls.orbitControls.enabled = false;
+                controls.toolControls.enabled = false;
+                controls.moveToolControl.enabled = true;
+            },
+
+
             // Disables camera control and hands it over to the tool
             // *FIXME* Needs to be more generic and support more tools
             EnableToolControls: function () {
                 controls.orbitControls.enabled = false;
+                controls.moveToolControl.enabled = false;
                 controls.toolControls.enabled = true;
             },
 
@@ -239,6 +267,7 @@ var Showroom = (function () {
             // *FIXME* Needs to be more generic and support more tools
             DisableToolControls: function () {
                 controls.toolControls.enabled = false;
+                controls.moveToolControl.enabled = false;
                 controls.orbitControls.enabled = true;
             },
 
@@ -266,6 +295,19 @@ var Showroom = (function () {
                 var wallMesh = new THREE.Mesh(GenerateWallSegment(x1,z1,x2,z2,true), defaultMaterial);
                 scene.add(wallMesh);
                 return wallMesh;
+            },
+
+
+            // Loads a 3d item and adds it to
+            // the current scene.
+            AddItem: function (objpath) {
+                var loader = new THREE.JSONLoader();
+                loader.load(objpath, function(geom) {
+                    var objMesh = new THREE.Mesh(geom, defaultMaterial);
+                    roomItems.push(objMesh);
+                    scene.add(objMesh);
+                    Showroom.Render();
+                });
             },
 
 
@@ -307,6 +349,17 @@ var Showroom = (function () {
                     points[0].point.z = Math.round(points[0].point.z);
                 }
                 return points[0].point; // .distance, .face, .object etc
+            },
+
+
+            // Throws a ray from the point clicked and
+            // returns the object that intersects it (excluding walls).
+            GetItemUnderMouse: function (mouseX, mouseY) {
+                var projector = new THREE.Projector();
+                var x = 2 * (mouseX / width) - 1,
+                    y = 1 - 2 * (mouseY / height); // mouse x and y coords
+                var pickingRay = projector.pickingRay( new THREE.Vector3(x, y, 0), currentCamera );
+                return (pickingRay.intersectObjects(roomItems, false))[0].object;
             },
 
 
