@@ -43,7 +43,7 @@ Showroom.MoveToolControl = function ( domElement ) {
 
         document.addEventListener( 'mousemove', onMouseMove, false );
         document.addEventListener( 'mouseup', onMouseUp, false );
-        scope.dispatchEvent( itemMove );
+        scope.dispatchEvent( itemMoveEvent );
     }
 
 

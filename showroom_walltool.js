@@ -66,7 +66,7 @@ Showroom.WallToolControl = function ( domElement ) {
         wallLast = wallStart;
         
         // 3 setup wallPreview 3d object and add to scene
-        wallPreview = Showroom.GenerateWallSegment(wallStart.x, wallStart.z, wallLast.x+1, wallLast.z+1);
+        wallPreview = Showroom.CreateDynamicWallSegment(wallStart.x, wallStart.z, wallLast.x+1, wallLast.z+1);
 
         // 4 Setup length indicator
         var wallLength = wallStart.distanceTo( wallLast );
@@ -113,9 +113,9 @@ Showroom.WallToolControl = function ( domElement ) {
         if ( scope.enabled === false || e.which != 1) return;
 
         Showroom.RemoveFromScene(wallIconSprite);
-        // 1 use Showroom.AddWallSegment(...) with wallStart and
+        // 1 use Showroom.CreateStaticWallSegment(...) with wallStart and
         //   wallLast as parameters.
-        Showroom.AddWallSegment( wallStart.x, wallStart.z,
+        Showroom.CreateStaticWallSegment( wallStart.x, wallStart.z,
                                  wallLast.x, wallLast.z );
 
         // 2 clear wallStart, wallLast, wallPreview

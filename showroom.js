@@ -2,16 +2,17 @@
 var Showroom = (function () {
 
         // General config
-        var width = 1024;
-        var height = 576;
-        var fov = 45;
-        var aspectRatio = width / height;
-        var near = 0.1;
-        var far = 10000;
+        var width = 1024; // WebGL Context Width
+        var height = 576; // WebGL Context Height
+        var fov = 45; // Camera Field of View
+        var aspectRatio = width / height; // WebGL Context Aspect Ratio
+        var near = 0.1; // Near clipping distance
+        var far = 10000; // Far clipping distance
 
 
         // Three.js initialization
-        var container = null;
+        var container = null; // html element that contains webgl context
+        // Renderer options and initialization
         var rendererOptions =  {
             antialias: true
         };
@@ -32,20 +33,26 @@ var Showroom = (function () {
                                                       near, far )
         };
 
+        // Current camera initialization
         var currentCamera = cameras.previewCamera;
         var currentCameraName = "preview";
 
+        // Scene initialization
         var scene = new THREE.Scene();
 
         
         // Default object(s) config/data
+        //   Materials
         var defaultMaterial = new THREE.MeshLambertMaterial( {color: 0xFFFFFF} );
         var debugMaterial = new THREE.MeshLambertMaterial( {color: 0xCC0000} );
 
 
-        // Floor/Grid
+        // Floor/Grid initialization
         var worldGrid = new THREE.GridHelper(20, 1);
 
+        // worldGrid makes a grid of lines aka can't test for intersections
+        // so worldGridGeo is a (non-rendered) plane of the same size used
+        // for intersection checks with the floor.
         var worldGridGeo = new THREE.Geometry();
         worldGridGeo.vertices.push(
                 new THREE.Vector3(1000, 0, 1000),
@@ -57,17 +64,17 @@ var Showroom = (function () {
         worldGridGeo.faces.push( new THREE.Face3(2,1,3) );
         worldGridGeo.computeFaceNormals();
         worldGridGeo.computeVertexNormals();
-        // Used for checking intersections with the floor (eg. clicking on the floor)
+        // the mesh object using the above worldGridGeo geometry
         var worldGridMesh = new THREE.Mesh( worldGridGeo );
 
 
         // Wall objects config/data
         var wallOptions = {
-            wallHeight: 3.05,
-            wallThickness: 0.3
+            wallHeight: 3.05, // in meters
+            wallThickness: 0.3 // in meters
         };
-        var wallSegments = [];
-        var wallSegmentsMeshes = [];
+        var wallSegments = []; // All wall segments in the scene
+        var wallSegmentsMeshes = []; // the mesh object for all the wall segments in the scene.
 
 
         // Room items *TOBEMOVED*
@@ -162,10 +169,13 @@ var Showroom = (function () {
             var wallGeometry = new THREE.Geometry();
             wallGeometry.dynamic = dynamic;
 
+            // find wall direction and calculate a vector perpendicular
+            // to the wall and the floor plane.
             var direction = (new THREE.Vector3(x2-x1, 0, z2-z1)).normalize();
             var crossDirection = new THREE.Vector3();
             crossDirection.crossVectors(direction, new THREE.Vector3(0,1,0)).normalize().multiplyScalar(wallOptions.wallThickness);
 
+            // create wall geometry
             wallGeometry.vertices.push( /* 0 */ segment.startPos,
                                         /* 1 */ segment.endPos,
                                         /* 2 */ new THREE.Vector3(segment.startPos.x, wallOptions.wallHeight, segment.startPos.z),
@@ -176,7 +186,7 @@ var Showroom = (function () {
                                         /* 7 */ (new THREE.Vector3(segment.endPos.x, wallOptions.wallHeight, segment.endPos.z)).sub(crossDirection)
                                       );
                 
-
+            // create wall faces
             wallGeometry.faces.push( new THREE.Face3(0,1,2) );
             wallGeometry.faces.push( new THREE.Face3(2,1,3) );
             wallGeometry.faces.push( new THREE.Face3(2,7,6) );
@@ -188,35 +198,42 @@ var Showroom = (function () {
             wallGeometry.faces.push( new THREE.Face3(6,5,4) );
             wallGeometry.faces.push( new THREE.Face3(6,7,5) );
 
+            // recalculate face and vertex normals
             wallGeometry.computeFaceNormals();
             wallGeometry.computeVertexNormals();
 
-            wallGeometry.WallUpdateEnd = function (x, z) {
-                var direction = (new THREE.Vector3(x-this.vertices[0].x, 0, z-this.vertices[0].z)).normalize();
-                var crossDirection = new THREE.Vector3();
-                crossDirection.crossVectors(direction, new THREE.Vector3(0,1,0)).normalize().multiplyScalar(wallOptions.wallThickness);
+            // *FIXME* Im a programmer outlaw, I define new functions on
+            // other peoples objects... so sue me...
+            if(dynamic === true) {
+                wallGeometry.WallUpdateEnd = function (x, z) {
+                    // This function recalculates the ending point of the wall.
+                    // Used by preview geometry during mouse move.
+                    var direction = (new THREE.Vector3(x-this.vertices[0].x, 0, z-this.vertices[0].z)).normalize();
+                    var crossDirection = new THREE.Vector3();
+                    crossDirection.crossVectors(direction, new THREE.Vector3(0,1,0)).normalize().multiplyScalar(wallOptions.wallThickness);
 
-                this.vertices[1].x = x;
-                this.vertices[1].z = z;
+                    this.vertices[1].x = x;
+                    this.vertices[1].z = z;
 
-                this.vertices[3].x = x;
-                this.vertices[3].z = z;
+                    this.vertices[3].x = x;
+                    this.vertices[3].z = z;
 
-                this.vertices[4] = (new THREE.Vector3(this.vertices[0].x, 0, this.vertices[0].z)).sub(crossDirection);
-                this.vertices[5] = (new THREE.Vector3(x, 0, z)).sub(crossDirection);
-                this.vertices[6] = (new THREE.Vector3(this.vertices[0].x, wallOptions.wallHeight, this.vertices[0].z)).sub(crossDirection);
-                this.vertices[7] = (new THREE.Vector3(x, wallOptions.wallHeight, z)).sub(crossDirection);
-            
-                this.verticesNeedUpdate = true;
-                this.normalsNeedUpdate = true;
-            };
+                    this.vertices[4] = (new THREE.Vector3(this.vertices[0].x, 0, this.vertices[0].z)).sub(crossDirection);
+                    this.vertices[5] = (new THREE.Vector3(x, 0, z)).sub(crossDirection);
+                    this.vertices[6] = (new THREE.Vector3(this.vertices[0].x, wallOptions.wallHeight, this.vertices[0].z)).sub(crossDirection);
+                    this.vertices[7] = (new THREE.Vector3(x, wallOptions.wallHeight, z)).sub(crossDirection);
+                
+                    this.verticesNeedUpdate = true;
+                    this.normalsNeedUpdate = true;
+                };
+            }
 
             return wallGeometry;
         }
 
-
-
-        // Public method definitions
+        // Private data and methods definition end here
+        // =====================================================================
+        // Public method definitions start here
 
         return {
             Initialize: function () {
@@ -239,7 +256,7 @@ var Showroom = (function () {
                 container.html( renderer.domElement );
             },
 
-
+            // Triggers a render of the scene
             Render: function () {
                 renderer.render( scene, currentCamera );
             },
@@ -279,22 +296,22 @@ var Showroom = (function () {
             },
 
 
-            // Adds a fixed wall segment (its geometry is not meant to change)
-            AddWallSegment: function (x1, z1, x2, z2) {
-                var wallMaterial =  new THREE.MeshLambertMaterial({color: 0xCC0000});
-                var wallMesh = new THREE.Mesh(GenerateWallSegment(x1,z1,x2,z2), defaultMaterial);
-                scene.add(wallMesh);
-                wallSegmentsMeshes.push(wallMesh);
-            },
-
-
             // The public method that generates a preview wall segment (dynamic geometry)
-            // Uses GenerateWallSegment to create the geometry
-            GenerateWallSegment: function (x1, z1, x2, z2) {
+            // Uses GenerateWallSegment to create the geometry 
+            CreateDynamicWallSegment: function (x1, z1, x2, z2) {
                 var wallMaterial =  new THREE.MeshLambertMaterial({color: 0xCC0000});
                 var wallMesh = new THREE.Mesh(GenerateWallSegment(x1,z1,x2,z2,true), defaultMaterial);
                 scene.add(wallMesh);
                 return wallMesh;
+            },
+
+
+            // Adds a fixed wall segment (its geometry is not meant to change)
+            CreateStaticWallSegment: function (x1, z1, x2, z2) {
+                var wallMaterial =  new THREE.MeshLambertMaterial({color: 0xCC0000});
+                var wallMesh = new THREE.Mesh(GenerateWallSegment(x1,z1,x2,z2,false), defaultMaterial);
+                scene.add(wallMesh);
+                wallSegmentsMeshes.push(wallMesh);
             },
 
 
@@ -359,6 +376,8 @@ var Showroom = (function () {
                 var x = 2 * (mouseX / width) - 1,
                     y = 1 - 2 * (mouseY / height); // mouse x and y coords
                 var pickingRay = projector.pickingRay( new THREE.Vector3(x, y, 0), currentCamera );
+
+                // spits a hideous error, please fix it purogurammeru-sama
                 return (pickingRay.intersectObjects(roomItems, false))[0].object;
             },
 
@@ -388,7 +407,7 @@ var Showroom = (function () {
                 Showroom.Render();
             }
 
-        }; // Return ends here
+        }; // Public part returns here, assigned on var Showroom.
 
 })();
 

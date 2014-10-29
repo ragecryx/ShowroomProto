@@ -1,9 +1,26 @@
 
-## TODO ##
+## Features and Major Fixes ##
 
 - [x] Load a test object.
-- [ ] Fix room corners & wall thickness displacement.
+- [ ] Fix room corners & wall thickness displacement. (clockwise or counter-clockwise wall placement)
 - [ ] Snap wall segments.
 - [ ] Refactor tool support.
+- [ ] Tool callbacks for success or failure (e.g. object picking)
+- [ ] Wall removal tool.
 - [ ] Prevent item intersection.
-- [ ] Windows and Doors (Objects changing wall segments).
+- [ ] Windows (Objects changing wall segments)
+- [ ] Doors (Objects changing wall segments)
+- [ ] Rectangle Wall Tool (Display x*y = m^2, length and width)
+- [ ] Curved Walls ? (Display arc and diameter)
+- [ ] Space Union (e.g. with rectangles)
+
+
+## UI Improvements ##
+
+- [ ] Camera Controls with On-Screen buttons (touch support)
+- [ ] Remove Camera Mouse-controls
+
+
+## Minor Fixes ##
+
+- [ ] Limit wall and item creation and placement to grid.
